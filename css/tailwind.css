@@ -49,3 +49,12 @@ input:-webkit-autofill:focus {
   display: inline-block;
   vertical-align: middle;
 }
+
+.plotly-chart {
+  border: black 1px solid;
+  border-radius: 4px;
+  display: block;
+  /* text-align: center; */
+  position: relative;
+  padding: 5px 5px 5px 5px;
+}
