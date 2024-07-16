@@ -66,10 +66,11 @@ function createTagCount(allBlogs) {
     if (file.tags && (!isProduction || file.draft !== true)) {
       file.tags.forEach((tag) => {
         const formattedTag = slug(tag)
-        if (formattedTag in tagCount) {
+        if (!(formattedTag in tagCount)) {
+          tagCount[formattedTag] = 0
+        }
+        if (file.discoverable) {
           tagCount[formattedTag] += 1
-        } else {
-          tagCount[formattedTag] = 1
         }
       })
     }
@@ -84,7 +85,7 @@ function createSearchIndex(allBlogs) {
   ) {
     writeFileSync(
       `public/${siteMetadata.search.kbarConfig.searchDocumentsPath}`,
-      JSON.stringify(allCoreContent(sortPosts(allBlogs)))
+      JSON.stringify(allCoreContent(sortPosts(allBlogs.filter((post) => post.discoverable))))
     )
     console.log('Local search index generated...')
   }
@@ -100,6 +101,7 @@ export const Blog = defineDocumentType(() => ({
     tags: { type: 'list', of: { type: 'string' }, default: [] },
     lastmod: { type: 'date' },
     draft: { type: 'boolean' },
+    discoverable: { type: 'boolean', default: true },
     summary: { type: 'string' },
     images: { type: 'json' },
     authors: { type: 'list', of: { type: 'string' } },

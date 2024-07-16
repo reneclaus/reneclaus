@@ -1,36 +1,67 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useContext, ReactNode } from 'react'
 import dynamic from 'next/dynamic'
-import siteMetadata from '@/data/siteMetadata'
+import { FigureIdContext } from './FigureIdContext'
+import { ModeBarButtonAny } from 'plotly.js'
 
 const Plot = dynamic(() => import('react-plotly.js'), { ssr: false })
 
-export default function PlotlyChart({ src }: { src: string }) {
-  if (src[0] == '/') {
-    src = siteMetadata.siteUrl + '/' + src
-  }
+export default function PlotlyChart({
+  src,
+  id = null,
+  children,
+}: {
+  src: string
+  id: string | null
+  children: ReactNode
+}) {
+  // if (src[0] == '/') {
+  //   src = siteMetadata.siteUrl + '/' + src
+  // }
   const [file, setFile] = useState(undefined)
+  const getFigureId = useContext(FigureIdContext)
+  const figureId = getFigureId(id ? id : src)
+  id = id || `figure_${figureId}`
 
   useEffect(() => {
-    fetch(src)
+    const abortController = new AbortController()
+    fetch(src, { signal: abortController.signal })
       .then((response) => response.json())
-      .then((data) => setFile(data))
+      .then((data) => {
+        data['title'] = data['layout']['title']['text']
+        delete data['layout']['title']
+        data['layout']['margin'] = { l: 0, r: 0, b: 0, t: 0, pad: 0 }
+        setFile(data)
+      })
       .catch((error) => console.error(error))
+    return () => {
+      abortController.abort()
+    }
   }, [src])
   if (!file) {
     return <></>
   }
-  // const config = {
-  //   displaylogo: false,
-  //   modeBarButtons: [['toImage', 'zoom2d', 'pan2d', 'resetViews']],
-  // }
+  const config = {
+    displaylogo: false,
+    modeBarButtons: [['toImage', 'zoom2d', 'pan2d', 'resetViews']] as ModeBarButtonAny[][],
+  }
   return (
-    <Plot
-      data={file['data']}
-      layout={file['layout']}
-      useResizeHandler={true}
-      style={{ width: '100%', height: '100%' }}
-    />
+    <figure id={id}>
+      <Plot
+        data={file['data']}
+        layout={file['layout']}
+        useResizeHandler={true}
+        config={config}
+        style={{ width: '100%', height: '100%' }}
+      />
+      <figcaption>
+        <h4>
+          <a href={`#${id}`}>Figure {figureId}:</a>{' '}
+          <span className="font-normal">{file['title']}</span>
+        </h4>
+        {children}
+      </figcaption>
+    </figure>
   )
 }
 

@@ -1,0 +1,28 @@
+---
+title: Model Normalization
+date: '2024-07-10'
+draft: true
+tags: ['llm']
+summary: 'An in-depth examination of redundant model parameters and other observations.'
+---
+
+## Attention QK-bias
+
+Both the query and key matrices have corresponding bias vectors. It turns out
+that the bias vector for the key matrix doesn't have any effect because the
+softmax is invariant under addition of a constant. It should be possible to move
+the query bias through the query matrix itself, but this turns out to not be
+possible.
+
+It turns out that the query bias vector lies at least partially in the
+null-space of the query matrix. Specifically, the part of the bias vector that
+is in the null space of the query matrix has a significant effect on the model
+output in some layers.
+
+This means that while the query-key matrix may be sensitive to certain
+dimensions of the current and past tokens, the bias vector, which is sensitive
+for particular _values_ in past tokens, is sensitive to dimensions other than
+the ones that the query-key matrix cares about.
+
+I also notice that the bias vector only has a signficiant effect in the first
+few layers.
