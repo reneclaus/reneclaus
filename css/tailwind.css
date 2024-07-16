@@ -58,3 +58,22 @@ input:-webkit-autofill:focus {
   position: relative;
   padding: 5px 5px 5px 5px;
 }
+
+/* Make nested ordered lists in markdown render using a, b, c, ... for the second level. */
+.prose ol ol li {
+  list-style-type: lower-alpha;
+}
+
+/* Fix for plotly modebar layout. https://github.com/plotly/plotly.js/issues/5828 */
+.js-plotly-plot .plotly .modebar svg {
+  display: inline;
+}
+
+figure {
+  border: solid 1px black;
+  padding: 0px 10px 0px 10px;
+  border-radius: 5px;
+}
+figure p:last-child {
+  margin-bottom: 0.5em;
+}

@@ -1,0 +1,155 @@
+---
+title: How the Model Converges to the Final Next Token
+date: '2024-07-11'
+draft: true
+discoverable: true
+tags: ['llm']
+summary: "I explore how the model's prediction of the next token evolves through the layers of the model. I also introduce my ossified parameter hypothesis."
+---
+
+## Overview
+
+> How does the model decide on which token to produce next?
+>
+> Does it make an initial guess and then refine it in each layer?
+>
+> Does it "think" for most of the layers and then select the token at the end?
+
+To investigate these questions we can take advantage of the fact that the model
+architecture _updates_ its internal state, the embedding vector, for each layer
+before converting the embedding vector into a next-token prediction.
+
+An overview of the operation of the LLM is:
+
+1. The token is converted to a 2048 dimensional embedding vector using a lookup table.
+2. For each of the 24 layers:
+   1. The attention block modifies the embedding vector.
+   2. The feed forward network block modifies the embedding vector.
+3. The embedding vector is projected against a vector for each possible output
+   token to produce a next-token prediction score.
+4. For each possible output token, a corresponding bias is added to the score.
+5. A softmax converts from the score to a probability between 0 and 1.
+
+At any point in step (2), while executing the model, we can jump to steps (3)
+and (4) to get a next-token prediction score for each output token. By looking
+at how the score changes as we move through the layers, we can see at what point
+the model "realizes" what the output token should be.
+
+See [Logit Evolution Plots](/blog/figure-explanations/logit-evolution) for
+details on how to interpret the plots in this post.
+
+## Multi-Token Word
+
+> Does the model behave differently when necessary information is available in
+> the context compared to when it needs to make a best guess based on its
+> training distribution?
+
+This test sentence contains repeated references to a name, "Kraemer," that
+consists of two tokens " Kra" and "emer". We can compare how the model completes
+the name the first time it sees it vs later times. We expect that the first time
+it must rely on the probability that it learned during training. The second time
+it can look back at the previous instance.
+
+> Community Involvement. <u><b>Kra</b></u>emer Mining & Materials is committed
+> to being a strong community partner by working with citizens, businesses and
+> government to be a positive and contributing neighbor.. <u><b>Kra</b></u>emer
+> believes ...
+
+<PlotlyChart src="figures/logit_evolution_3_5.json" id="fig_3_4"></PlotlyChart>
+
+The first time the name appears, the model completes it as "Kraus", through
+"Kraemer" is its third highest option, suggesting that it saw the name during
+training.
+
+<PlotlyChart src="figures/logit_evolution_3_34.json" />
+
+The second time it sees the name, it gets the correct answer ("emer" is the
+leftmost token). We also notice that the attention blocks (light blue segments)
+tend to be positively contributing to the score, whereas for other tokens and
+the previous figure that is not the case. The attention block is the part of the
+model that looks at words earlier in the text, so this suggests that at least
+sometimes the attention block is directly affecting the prediction score (rather
+than doing it indirectly).
+
+## Common Next Token
+
+You might have noticed that in the previous figure the line for the period (.)
+token is very different from the others. It starts with a very high score that
+dramatically drops.
+
+Studying more cases, I have observed that this is a common occurence--there are
+certain tokens that always start with a high score that then drops dramatically.
+If we look at the top 10 tokens before layer 0 we find "**TODO: get list of top
+10 tokens**". My interpretation is that these are tokens that are very common in
+general text, so they start with a high probability before any information about
+the rest of the text can be incorporated.
+
+For this example we want to see what the model will do when the correct next
+token is one of these common tokens. We select the token "citizens" in the text
+above because the expected next token is a comma (,).
+
+> Community Involvement. Kraemer Mining & Materials is committed to being a strong
+> community partner by working with <u>citizens</u>, ...
+
+<PlotlyChart src="figures/logit_evolution_3_21.json" />
+<PlotlyChart src="figures/rank_ordering_evolution_3_21.json" />
+
+First, it's always amazing to see that the model predicts the next token
+correctly. Most of the top-10 tokens are among the 100 most likely tokens at
+layer 0 and behave similarly. Some of the tokens ("groups", "throughout", "who")
+are not common and behave differently.
+
+Examining the line corresponding to the comma (,) prediction, we observe that
+the score drops in early layers (like before) but then rises again. This
+suggests that the first half of the layers may be compensating for the high
+initial score of the token and the second half of the layers are responsible for
+using the context to inteligently select the next token. This suggests that
+perhaps the presence of the "." in the top-10 of the previous example was
+actually a failure case where the model wasn't able to sufficiently drop the
+score of this common token before the final layer.
+
+## Ossified Parameter Hypothesis
+
+I suspect that early in training the model learned a mapping from the
+`word embedding matrix` to the `final weight matrix`[^2] that captures the
+statistical likelyhood of each token following any other token. As training
+proceeded, corrections to this prediction evolved.
+
+Maybe a correction that incorporates the previous two tokens evolved. This would
+likely have appeared in all the layers simultaneously since none of the layers
+were trained yet. Once this correction exists, a second correction could have
+appeared that uses the results of the first correction. This could only appear
+in layers 1 to 24 since at least the first layer is needed to provide the first
+correction.
+
+If we imagine this process continuing we see that later layers would naturally
+build on the outputs of earlier layers. As more complex and specific corrections
+appear, it becomes difficult to change the outputs those corrections depend on.
+The weights of early layers become ossified[^1] and resistant to change--or at least
+the behaviors or properties used by later layers ossify.
+
+Essentially, much of the behavior of early layers is reflective of the model
+behavior early in training, while later layers may have changed dramatically
+during training. Another way to put this is that groking can't change the
+weights of early layers in the model.
+
+Under this hypothesis, the high initial next-token prediction score for common
+tokens observed in the plots above is because the `word embedding matrix` and
+`final weight matrix`, which define that initial score, were the earliest
+weights to evolve and have ossified. This would also specifically
+affect the most common tokens since the prediction behavior for those would have
+evolved before less common tokens.
+
+[^1]:
+    I'm naming this "parameter ossification" to invoke the idea that the
+    parameters stop developing and to lightly evoke the concept of fossilization to
+    suggest that ossified parameters reflect the model behavior from early in
+    training.
+
+[^2]:
+    The `word embedding matrix` consists of the embeddings of each token. When
+    initially converting an input token into an embedding vector it is performed
+    using a lookup into this matrix. The `final weight matrix` is a matrix
+    consisting of a vector for each output token. The prediction score for each
+    token depends on the dot-product of the final embedding vector with each of
+    these vectors.

@@ -1,0 +1,107 @@
+---
+title: Experiment Setup
+date: '2024-07-10'
+draft: false
+discoverable: false
+tags: ['llm']
+summary: 'An overview of the setup I use for the research. Which model, dataset, ect...'
+---
+
+## Experimental Philosophy
+
+I'm interested in examining an already trained model to find structure within
+the model weights that will provide insights into how training or the model
+architecture could be improved. I expect that the emergent structure will be
+similar across most LLMs, so which model I evaluate is relatively unimportant at
+this point.
+
+I'm deliberately avoiding training because that requires infrastrcture and
+expertise that I don't currently have. My experience with model training is that
+it tends to be slow and leads to a workflow heavy on trying things and light on
+introspection and building intuition. While there are many questions that are
+best answered through model training, I am focusing my attention on those
+questions I can answer without the need to sweep training parameters or modify
+model architecture.
+
+## My Setup
+
+I run all my analysis using `streamlit` and create visualizations using
+`plotly`. I have a normal computer with an `i5-13600K` processor and a
+`GTX 1080` graphics card. I did upgrade it to `96GB` of RAM. I had installed
+`48GB` when I last upgraded the computer since I expected I would be playing
+around with some of the new ML technologies. Once I started working with LLM
+models I found that was not quite enough for what I was doing, so I added two
+more sticks.
+
+I run on Windows using `WSL`. I have disabled the use of swap and allowed WSL to
+use most of the system memory--I still occasionally get OOMs though.
+
+I sometimes use `jax` to accelerate the model evaluation using the GPU. Most of
+the work doesn't require me to run the entire model, though. In those cases I
+typically stick with numpy since it interacts more naturaly with `streamlit`.
+The model I'm using came as a `pytorch` model, which was also able to run on
+the GPU within `WSL`.
+
+I use `np.memmap` for the model weight matrices so that they don't grow the
+python process memory usage. Since these matrices can be quite large, this
+allows me to load them in code whenever I use them without worrying about
+loading multiple copies of the weights into memory.
+
+## The Model
+
+I'm using the `tiiuae/falcon-rw-1b` model from Hugging Face. I tried using the
+LLAMA-2 model, but at 7B parameters, I ran into memory problems. Now that I've
+worked with these models I know how I'd handle those memory problems, but since
+I'm all set up to use the `falcon-rw-1b` model I see no need to switch at this
+time.
+
+I got lucky because in addition to being relatively small, the model turns out
+to make some architecture decisions that make it interesting to study. Some of
+the things I like about the model are:
+
+1. At only 1B parameters, it's small enough that I can keep it in memory and
+   have memory to spare for my analysis.
+2. It produces relatively good text completions, so it probably has some of the
+   same emergent behavior of larger models.
+3. It uses `ALIBI` as the position encoding, which is much simpler than cosine
+   encoding or rotary positional encoding.
+4. It uses a GeLU activation function, which is simpler than the GLU activation
+   function used in `LLAMA-2`.
+
+The model has these properties:
+
+|      Parameter      |   Value   |
+| :-----------------: | :-------: |
+|   embedding size    |   2048    |
+|  number of layers   |    24     |
+|   number of heads   |    32     |
+|   head dimension    |    64     |
+|      MLP size       |   8192    |
+| Activation Function |   GeLU    |
+| Positional Encoding |   ALIBI   |
+| Layer Normalization | layerNorm |
+
+## A Dataset
+
+For some of my examinations I want to look at the statistical properties of
+intermediates in the model. To do this I need to run many tokens through the
+model.
+
+I arbitrarily selected the
+[nampdn-ai/tiny-lessons](https://huggingface.co/datasets/nampdn-ai/tiny-lessons)
+dataset.
+
+```python
+from datasets import load_dataset
+dataset = load_dataset('nampdn-ai/tiny-lessons')['train']['text']
+```
+
+This dataset has a few properties I like:
+
+- Many relatively short text snippets. They are short enough that I rarely need
+  to truncate the snippets to keep a reasonable context window.
+- A variety of topics so that a wide range of the models knowledge gets activated.
+- Clean text with no markup or other weird tokens.
+
+I am not using this dataset for training or to evaluate model performance--I
+only use it to trace different paths through the model.

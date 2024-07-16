@@ -10,16 +10,12 @@ const Header = () => {
     <header className="flex items-center justify-between py-10">
       <div>
         <Link href="/" aria-label={siteMetadata.headerTitle}>
-          <div className="flex items-center justify-between">
-            <div className="mr-3">{/* <Logo height="46" /> */}</div>
-            {typeof siteMetadata.headerTitle === 'string' ? (
-              <div className="hidden h-6 text-5xl font-semibold sm:block">
-                <Logo height="1.6ex" className="inline-block align-baseline" />
-                {siteMetadata.headerTitle.substring(1)}
-              </div>
-            ) : (
-              siteMetadata.headerTitle
-            )}
+          <div className="mt-1.2 flex h-6 items-center justify-between text-5xl font-semibold sm:block">
+            <Logo
+              height="1.6ex"
+              className="-me-0.5 inline-block align-baseline text-6xl sm:ml-3 sm:text-5xl"
+            />
+            <span className="hidden sm:inline">{siteMetadata.headerTitle.substring(1)}</span>
           </div>
         </Link>
       </div>
@@ -36,9 +32,9 @@ const Header = () => {
               {link.title}
             </Link>
           ))}
-        <SearchButton />
-        <MobileNav />
+        {/* <SearchButton /> */}
       </div>
+      <MobileNav />
     </header>
   )
 }
