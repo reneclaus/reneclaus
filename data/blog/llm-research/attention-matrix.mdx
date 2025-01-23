@@ -1,0 +1,108 @@
+---
+title: Attention Matrix Plots
+date: '2025-01-22'
+draft: false
+discoverable: true
+tags: ['llm']
+summary: 'Interesting plots examining properties of the model parameters in the attention block.'
+---
+
+This series of figures examines properties of the model weights without considering any specific input to the model.
+
+# Value Matrix
+
+Once the attention mechanism has selected a target token, the *hidden_state* from that token is multiplied by a *Value Matrix* and the result is added to the current token's *hidden_state*. There is a different value matrix for each head and it is low rank, just like the key and query matrices.
+
+We can decompose the value matrix for each head into left and right singular vectors using SVD. We can then consider that the value matrix copies (and scales) the information in a subspace (defined by the left singular vectors) of the target token's *hidden_state* and copies it to the subspace defined by the right singular vectors.
+
+
+<SliderFigure
+  id="attention_matrix_input_output_diagonals_hist"
+  title="Input-Output Singular Vector Projections"
+  sliders={['layer']}
+  src="figures/attention_matrix_input_output_diagonals_hist/attention_matrix_input_output_diagonals_hist_${layer}.json"
+  layer_max={23}
+  layer_init={13}
+>
+This histogram takes the dot-product of each of the left-singular vectors with the corresponding right singular-vectors of the value matrix. Large values indicate that a specific subspace of the *hidden_state* might be being copied from another token. Negative values could indicate that a subspace may be being zeroed.
+</SliderFigure>
+
+## Self, Ortho, and Rotation Mapping
+
+When considering the subspaces spanned by the input and output-side singular vectors, it is interesting to decompose the matrix into the sum of three matrices:
+
+* *self-mapping*: A matrix where the left and right singular vectors are the same.
+* *ortho-mapping*: A matrix where all the left singular vectors are orthogonal to all the right singular vectors.
+* *rotation-mapping*: The leftover part that corresponds to a rotation of the input subspace that is then copied into the output subspace.
+
+This decomposition may not be unique. I use this code to calculate how much of the matrix consists of each of these components:
+```
+U, _, Vh = scipy.sparse.linalg.svds(ValueMatrix, 64)
+U = np.fliplr(U)
+Vh = np.flipud(Vh)
+cross_prod = Vh @ U
+
+self_mapping = np.abs(np.diagonal(cross_prod))
+ortho_mapping = np.linalg.norm(Vh - cross_prod @ U.T, axis=1)
+rot_mapping = np.linalg.norm((cross_prod * (1 - np.eye(cross_prod.shape[0]))) @ U.T, axis=1)
+```
+
+<FigureRef id="output_dimension_makeup" />shows how the value matrices decompose into these three components. The decomposition of a random matrix similar to these value matrices is indicated in the figure. It is clear that the training drives the value matrices to contain much more *self-mapping* than normal.
+
+It is expected that the matrices mostly consist of the *ortho-mapping* component since they have a 64 dimensional subspace in a 2048 dimensional space. Both self and ortho-mapping would require picking the same 64 dimensional basis vectors twice--for the input and output basis.
+
+<PlotlyChart src="figures/output_dimension_makeup.json" id="output_dimension_makeup">
+This plots how much of the value matrix for each head is composed of the *self*, *ortho*, and *rotation* components. Also indicated is where a randomly initialized value matrix would sit in this space.
+</PlotlyChart>
+
+<SliderFigure
+  id="attention_matrix_value_self_ortho_rot"
+  title="Input-Output Effect"
+  sliders={['layer', 'head']}
+  src="figures/attention_matrix_value_self_ortho_rot/attention_matrix_value_self_ortho_rot_${layer}_${head}.json"
+  layer_max={23}
+  layer_init={13}
+  head_max={31}
+  head_init={7}
+>
+The x-axis correponds to the 64 input-side singular vectors. The y-axis corresponds to the output-side singular vectors.
+
+The 2D histogram shows the projection of these vectors against each other. The values along the diagonal are the *self-mapping* component and the off-diagonals are the *rotation-mapping* components. The *ortho-mapping* component doesn't show up in the histogram, which can make it misleading when the *ortho-mapping* component is dominant.
+
+The *Singular Values* line (blue) shows the strength of the singular values along that axis. The value 1 is emphasized to provide a reference. Input and output vectors with small singular values don't have an effect, so their alignment is irrelevant.
+
+The brown band shows the 0.01 to 0.99 quantiles of the sampled hidden states projected against the input/output vectors. These plots can highlight if there are any particular input/output basis vectors that behave differently.
+
+The *Attention Bias* line (purple) shows the projection of the bias vector against each singular vector.
+</SliderFigure>
+
+# QK Matrix
+
+The attention mechanism typically has the form $x^T Q^T K x$ with a separate $Q$ and $K$ for each head. We can combine the $Q$ and $K$ matrices into a single matrix that captures what the attention mechanism is doing. This isn't typically done because these matrices are low rank, for example they have dimensions 2048 x 64 in this model and the combined $Q^T K$ matrix would be 2048 x 2048 and much more computationally expensive to work with. We can examine the $Q^TK$ matrix to see if it has any interesting properties. From here on, I will refer to this matrix as $M$.
+
+The following figures show the same analysis as performed for the value matrix earlier, but the meaning is different. For the value matrix, the left and right singular vectors specify the subspace being copied from and the subspace being copied to. For the $Q^T K$ matrix, they instead specify the subspaces used in the current token and the past tokens (query and key).
+
+
+<SliderFigure
+  id="attention_matrix_qk_hist"
+  title="Target-Current Singular Vector Projections"
+  sliders={['layer']}
+  src="figures/attention_matrix_qk_hist/attention_matrix_qk_hist_${layer}.json"
+  layer_max={23}
+  layer_init={13}
+>
+The same illustration as <FigureRef id="attention_matrix_input_output_diagonals_hist" />, except for the $Q^T K$ matrix, so input and output correspond to the current and target tokens.
+</SliderFigure>
+
+<SliderFigure
+  id="attention_matrix_qk"
+  title="Input-Output Effect"
+  sliders={['layer', 'head']}
+  src="figures/attention_matrix_qk/attention_matrix_qk_${layer}_${head}.json"
+  layer_max={23}
+  layer_init={13}
+  head_max={31}
+  head_init={7}
+>
+The same illustration as <FigureRef id="attention_matrix_value_self_ortho_rot" />, except for the $Q^T K$ matrix, so input and output correspond to the current and target tokens.
+</SliderFigure>

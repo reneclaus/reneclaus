@@ -1,0 +1,157 @@
+---
+title: Attention Focus Plots
+date: '2025-01-21'
+draft: false
+discoverable: true
+tags: ['llm']
+summary: 'Interesting plots showing how the transformer attention mechanism behaves.'
+---
+
+This series of figures examines how the attention block behaves on a particular sentence. The sentence was picked arbitrarily.
+
+This is the sentence used, with each token higlighted:
+
+<div style={{}}><span title="0" class="token" style={{"color":"rgb(31, 119, 180)"}}>By</span><span title="1" class="token" style={{"color":"rgb(255, 127, 14)"}}> the</span><span title="2" class="token" style={{"color":"rgb(44, 160, 44)"}}> end</span><span title="3" class="token" style={{"color":"rgb(214, 39, 40)"}}> of</span><span title="4" class="token" style={{"color":"rgb(148, 103, 189)"}}> 2014</span><span title="5" class="token" style={{"color":"rgb(140, 86, 75)"}}>,</span><span title="6" class="token" style={{"color":"rgb(227, 119, 194)"}}> we</span><span title="7" class="token" style={{"color":"rgb(127, 127, 127)"}}> plan</span><span title="8" class="token" style={{"color":"rgb(188, 189, 34)"}}> to</span><span title="9" class="token" style={{"color":"rgb(23, 190, 207)"}}> rev</span><span title="10" class="token" style={{"color":"rgb(31, 119, 180)"}}>amp</span><span title="11" class="token" style={{"color":"rgb(255, 127, 14)"}}> our</span><span title="12" class="token" style={{"color":"rgb(44, 160, 44)"}}> health</span><span title="13" class="token" style={{"color":"rgb(214, 39, 40)"}}> education</span><span title="14" class="token" style={{"color":"rgb(148, 103, 189)"}}> and</span><span title="15" class="token" style={{"color":"rgb(140, 86, 75)"}}> disease</span><span title="16" class="token" style={{"color":"rgb(227, 119, 194)"}}> prevention</span><span title="17" class="token" style={{"color":"rgb(127, 127, 127)"}}>.</span><span title="18" class="token" style={{"color":"rgb(188, 189, 34)"}}> program</span><span title="19" class="token" style={{"color":"rgb(23, 190, 207)"}}>,</span><span title="20" class="token" style={{"color":"rgb(31, 119, 180)"}}> which</span><span title="21" class="token" style={{"color":"rgb(255, 127, 14)"}}> was</span><span title="22" class="token" style={{"color":"rgb(44, 160, 44)"}}> suspended</span><span title="23" class="token" style={{"color":"rgb(214, 39, 40)"}}> in</span><span title="24" class="token" style={{"color":"rgb(148, 103, 189)"}}> September</span><span title="25" class="token" style={{"color":"rgb(140, 86, 75)"}}> 2013</span><span title="26" class="token" style={{"color":"rgb(227, 119, 194)"}}>.</span><span title="27" class="token" style={{"color":"rgb(127, 127, 127)"}}> We</span><span title="28" class="token" style={{"color":"rgb(188, 189, 34)"}}> will</span><span title="29" class="token" style={{"color":"rgb(23, 190, 207)"}}> conduct</span><span title="30" class="token" style={{"color":"rgb(31, 119, 180)"}}> health</span><span title="31" class="token" style={{"color":"rgb(255, 127, 14)"}}> education</span><span title="32" class="token" style={{"color":"rgb(44, 160, 44)"}}>.</span><span title="33" class="token" style={{"color":"rgb(214, 39, 40)"}}> sessions</span><span title="34" class="token" style={{"color":"rgb(148, 103, 189)"}}> at</span><span title="35" class="token" style={{"color":"rgb(140, 86, 75)"}}> the</span><span title="36" class="token" style={{"color":"rgb(227, 119, 194)"}}> community</span><span title="37" class="token" style={{"color":"rgb(127, 127, 127)"}}> centers</span><span title="38" class="token" style={{"color":"rgb(188, 189, 34)"}}>,</span><span title="39" class="token" style={{"color":"rgb(23, 190, 207)"}}> group</span><span title="40" class="token" style={{"color":"rgb(31, 119, 180)"}}> sessions</span><span title="41" class="token" style={{"color":"rgb(255, 127, 14)"}}> for</span><span title="42" class="token" style={{"color":"rgb(44, 160, 44)"}}> specific</span><span title="43" class="token" style={{"color":"rgb(214, 39, 40)"}}> conditions</span><span title="44" class="token" style={{"color":"rgb(148, 103, 189)"}}> (</span><span title="45" class="token" style={{"color":"rgb(140, 86, 75)"}}>Di</span><span title="46" class="token" style={{"color":"rgb(227, 119, 194)"}}>abetes</span><span title="47" class="token" style={{"color":"rgb(127, 127, 127)"}}>,.</span><span title="48" class="token" style={{"color":"rgb(188, 189, 34)"}}> Hy</span><span title="49" class="token" style={{"color":"rgb(23, 190, 207)"}}>pert</span><span title="50" class="token" style={{"color":"rgb(31, 119, 180)"}}>ension</span><span title="51" class="token" style={{"color":"rgb(255, 127, 14)"}}>,</span><span title="52" class="token" style={{"color":"rgb(44, 160, 44)"}}> etc</span><span title="53" class="token" style={{"color":"rgb(214, 39, 40)"}}>.),</span><span title="54" class="token" style={{"color":"rgb(148, 103, 189)"}}> as</span><span title="55" class="token" style={{"color":"rgb(140, 86, 75)"}}> well</span><span title="56" class="token" style={{"color":"rgb(227, 119, 194)"}}> as</span><span title="57" class="token" style={{"color":"rgb(127, 127, 127)"}}> community</span><span title="58" class="token" style={{"color":"rgb(188, 189, 34)"}}> forums</span><span title="59" class="token" style={{"color":"rgb(23, 190, 207)"}}> and</span><span title="60" class="token" style={{"color":"rgb(31, 119, 180)"}}> health</span><span title="61" class="token" style={{"color":"rgb(255, 127, 14)"}}> fair</span><span title="62" class="token" style={{"color":"rgb(44, 160, 44)"}}>.</span><span title="63" class="token" style={{"color":"rgb(214, 39, 40)"}}> We</span><span title="64" class="token" style={{"color":"rgb(148, 103, 189)"}}> will</span><span title="65" class="token" style={{"color":"rgb(140, 86, 75)"}}> recruit</span><span title="66" class="token" style={{"color":"rgb(227, 119, 194)"}}>.</span><span title="67" class="token" style={{"color":"rgb(127, 127, 127)"}}> health</span><span title="68" class="token" style={{"color":"rgb(188, 189, 34)"}}> agents</span><span title="69" class="token" style={{"color":"rgb(23, 190, 207)"}}> to</span><span title="70" class="token" style={{"color":"rgb(31, 119, 180)"}}> conduct</span><span title="71" class="token" style={{"color":"rgb(255, 127, 14)"}}> needs</span><span title="72" class="token" style={{"color":"rgb(44, 160, 44)"}}> assessment</span><span title="73" class="token" style={{"color":"rgb(214, 39, 40)"}}> in</span><span title="74" class="token" style={{"color":"rgb(148, 103, 189)"}}> our</span><span title="75" class="token" style={{"color":"rgb(140, 86, 75)"}}> area</span><span title="76" class="token" style={{"color":"rgb(227, 119, 194)"}}> of</span><span title="77" class="token" style={{"color":"rgb(127, 127, 127)"}}> intervention</span><span title="78" class="token" style={{"color":"rgb(188, 189, 34)"}}>,</span><span title="79" class="token" style={{"color":"rgb(23, 190, 207)"}}> identify</span><span title="80" class="token" style={{"color":"rgb(31, 119, 180)"}}>.</span><span title="81" class="token" style={{"color":"rgb(255, 127, 14)"}}> the</span><span title="82" class="token" style={{"color":"rgb(44, 160, 44)"}}> health</span><span title="83" class="token" style={{"color":"rgb(214, 39, 40)"}}> and</span><span title="84" class="token" style={{"color":"rgb(148, 103, 189)"}}> economic</span><span title="85" class="token" style={{"color":"rgb(140, 86, 75)"}}> needs</span><span title="86" class="token" style={{"color":"rgb(227, 119, 194)"}}>,</span><span title="87" class="token" style={{"color":"rgb(127, 127, 127)"}}> educate</span><span title="88" class="token" style={{"color":"rgb(188, 189, 34)"}}> and</span><span title="89" class="token" style={{"color":"rgb(23, 190, 207)"}}> encourage</span><span title="90" class="token" style={{"color":"rgb(31, 119, 180)"}}> people</span><span title="91" class="token" style={{"color":"rgb(255, 127, 14)"}}> to</span><span title="92" class="token" style={{"color":"rgb(44, 160, 44)"}}> access</span><span title="93" class="token" style={{"color":"rgb(214, 39, 40)"}}> preventive</span><span title="94" class="token" style={{"color":"rgb(148, 103, 189)"}}>.</span><span title="95" class="token" style={{"color":"rgb(140, 86, 75)"}}> services</span><span title="96" class="token" style={{"color":"rgb(227, 119, 194)"}}>,</span><span title="97" class="token" style={{"color":"rgb(127, 127, 127)"}}> such</span><span title="98" class="token" style={{"color":"rgb(188, 189, 34)"}}> as</span><span title="99" class="token" style={{"color":"rgb(23, 190, 207)"}}> vaccination</span><span title="100" class="token" style={{"color":"rgb(31, 119, 180)"}}>,</span><span title="101" class="token" style={{"color":"rgb(255, 127, 14)"}}> prenatal</span><span title="102" class="token" style={{"color":"rgb(44, 160, 44)"}}> care</span><span title="103" class="token" style={{"color":"rgb(214, 39, 40)"}}>,</span><span title="104" class="token" style={{"color":"rgb(148, 103, 189)"}}> and</span><span title="105" class="token" style={{"color":"rgb(140, 86, 75)"}}> health</span><span title="106" class="token" style={{"color":"rgb(227, 119, 194)"}}> maintenance</span><span title="107" class="token" style={{"color":"rgb(127, 127, 127)"}}> for</span><span title="108" class="token" style={{"color":"rgb(188, 189, 34)"}}> chronic</span><span title="109" class="token" style={{"color":"rgb(23, 190, 207)"}}>.</span><span title="110" class="token" style={{"color":"rgb(31, 119, 180)"}}> diseases</span><span title="111" class="token" style={{"color":"rgb(255, 127, 14)"}}>..</span><span title="112" class="token" style={{"color":"rgb(44, 160, 44)"}}> The</span><span title="113" class="token" style={{"color":"rgb(214, 39, 40)"}}> health</span><span title="114" class="token" style={{"color":"rgb(148, 103, 189)"}}> agents</span><span title="115" class="token" style={{"color":"rgb(140, 86, 75)"}}> will</span><span title="116" class="token" style={{"color":"rgb(227, 119, 194)"}}> also</span><span title="117" class="token" style={{"color":"rgb(127, 127, 127)"}}> identify</span><span title="118" class="token" style={{"color":"rgb(188, 189, 34)"}}> pregnant</span><span title="119" class="token" style={{"color":"rgb(23, 190, 207)"}}> women</span><span title="120" class="token" style={{"color":"rgb(31, 119, 180)"}}>,</span><span title="121" class="token" style={{"color":"rgb(255, 127, 14)"}}> newborn</span><span title="122" class="token" style={{"color":"rgb(44, 160, 44)"}}>s</span><span title="123" class="token" style={{"color":"rgb(214, 39, 40)"}}>,</span><span title="124" class="token" style={{"color":"rgb(148, 103, 189)"}}> infants</span><span title="125" class="token" style={{"color":"rgb(140, 86, 75)"}}> with</span><span title="126" class="token" style={{"color":"rgb(227, 119, 194)"}}> high</span><span title="127" class="token" style={{"color":"rgb(127, 127, 127)"}}> risk</span><span title="128" class="token" style={{"color":"rgb(188, 189, 34)"}}> of</span><span title="129" class="token" style={{"color":"rgb(23, 190, 207)"}}> malnutrition</span><span title="130" class="token" style={{"color":"rgb(31, 119, 180)"}}> to</span><span title="131" class="token" style={{"color":"rgb(255, 127, 14)"}}> help</span><span title="132" class="token" style={{"color":"rgb(44, 160, 44)"}}> them</span><span title="133" class="token" style={{"color":"rgb(214, 39, 40)"}}> obtain</span><span title="134" class="token" style={{"color":"rgb(148, 103, 189)"}}> proper</span><span title="135" class="token" style={{"color":"rgb(140, 86, 75)"}}> care</span><span title="136" class="token" style={{"color":"rgb(227, 119, 194)"}}>,</span><span title="137" class="token" style={{"color":"rgb(127, 127, 127)"}}> vaccination</span><span title="138" class="token" style={{"color":"rgb(188, 189, 34)"}}>,</span><span title="139" class="token" style={{"color":"rgb(23, 190, 207)"}}> food</span><span title="140" class="token" style={{"color":"rgb(31, 119, 180)"}}> assistance</span><span title="141" class="token" style={{"color":"rgb(255, 127, 14)"}}>,</span><span title="142" class="token" style={{"color":"rgb(44, 160, 44)"}}> etc</span><span title="143" class="token" style={{"color":"rgb(214, 39, 40)"}}>.</span><span title="144" class="token" style={{"color":"rgb(148, 103, 189)"}}> They</span><span title="145" class="token" style={{"color":"rgb(140, 86, 75)"}}> will</span><span title="146" class="token" style={{"color":"rgb(227, 119, 194)"}}> also</span><span title="147" class="token" style={{"color":"rgb(127, 127, 127)"}}> identify</span><span title="148" class="token" style={{"color":"rgb(188, 189, 34)"}}> people</span><span title="149" class="token" style={{"color":"rgb(23, 190, 207)"}}> with</span><span title="150" class="token" style={{"color":"rgb(31, 119, 180)"}}> certain</span><span title="151" class="token" style={{"color":"rgb(255, 127, 14)"}}> conditions</span><span title="152" class="token" style={{"color":"rgb(44, 160, 44)"}}> such</span><span title="153" class="token" style={{"color":"rgb(214, 39, 40)"}}> as</span><span title="154" class="token" style={{"color":"rgb(148, 103, 189)"}}> HIV</span><span title="155" class="token" style={{"color":"rgb(140, 86, 75)"}}>,</span><span title="156" class="token" style={{"color":"rgb(227, 119, 194)"}}> Tu</span><span title="157" class="token" style={{"color":"rgb(127, 127, 127)"}}>ber</span><span title="158" class="token" style={{"color":"rgb(188, 189, 34)"}}>culosis</span><span title="159" class="token" style={{"color":"rgb(23, 190, 207)"}}>,</span><span title="160" class="token" style={{"color":"rgb(31, 119, 180)"}}> and</span><span title="161" class="token" style={{"color":"rgb(255, 127, 14)"}}> Mal</span><span title="162" class="token" style={{"color":"rgb(44, 160, 44)"}}>aria</span><span title="163" class="token" style={{"color":"rgb(214, 39, 40)"}}> to</span><span title="164" class="token" style={{"color":"rgb(148, 103, 189)"}}> help</span><span title="165" class="token" style={{"color":"rgb(140, 86, 75)"}}> them</span><span title="166" class="token" style={{"color":"rgb(227, 119, 194)"}}> access</span><span title="167" class="token" style={{"color":"rgb(127, 127, 127)"}}> available</span><span title="168" class="token" style={{"color":"rgb(188, 189, 34)"}}> services</span><span title="169" class="token" style={{"color":"rgb(23, 190, 207)"}}>.</span></div>
+
+## What does the attention mechanism focus on?
+
+<SliderFigure
+  id="attention_map"
+  title="Attention Map"
+  sliders={['layer', 'head']}
+  src="figures/attention_map/attention_map_0_${layer}_${head}.json"
+  layer_max={23}
+  layer_init={14}
+  head_max={31}
+  head_init={17}
+>
+This figure visualizes the attention matrix. Each row corresponds to a token, and the values in the row are the attention (before softmax) to all the previous tokens, which I refer to as *target tokens*.
+
+The figure higlights which target tokens are getting the most attention. It specifically breaks out two special scenarios--when the target token is the current token (indicated in green) and when it is the first token (purple).
+</SliderFigure>
+
+
+<SliderFigure
+  id="attention_breakdown_ternary"
+  title="Attention Breakdown"
+  sliders={['layer', 'head']}
+  src="figures/attention_breakdown_ternary/attention_breakdown_ternary_0_${layer}_${head}.json"
+  layer_max={23}
+  layer_init={14}
+  head_max={31}
+  head_init={17}
+>
+This figure shows a breakdown of the components of attention matrix. Since this model uses ALIBI as the positional encoding mechanism, attention can be broken down into a linear sum of three parts:
+
+* ALiBi: A linear term that is more significant for lower head indices and becomes less significant for tokens further in the past.
+* Bias: A linear term that depends only on the target token and not on the current token.
+* Attention: The quadratic term that depends both on the current token and the target token in the past.
+
+By default, the figure shows only the value corresponding to the largest attention value in each row of <FigureRef id="attention_map" />, but the second, third, ect... highest values can be shown using the *sort_idx* filter.
+</SliderFigure>
+
+<SliderFigure
+  id="attention_breakdown_bias_alibi"
+  title="Attention Breakdown - Bias vs ALiBi"
+  remove_title={true}
+  sliders={['layer', 'head']}
+  src="figures/attention_breakdown_bias_alibi/attention_breakdown_bias_alibi_0_${layer}_${head}.json"
+  layer_max={23}
+  layer_init={14}
+  head_max={31}
+  head_init={17}
+>
+This figure shows the relative contribution of the Bias term and the ALiBi term. They both depend only on the current token (plotted along the x-axis). Adding the same value to all target tokens has no effect on the attention matrix after the softmax, so only the trend is interesting.
+</SliderFigure>
+
+
+## How does attention focus change across layers?
+
+
+
+<PlotlyChart src="figures/fraction_attending_self.json" id="fraction_attending_self">
+This figure examines how often heads in different layers attend to themselves.
+
+The y-axis[^1] plots the fraction of tokens where the target token with the highest attention was itself.
+</PlotlyChart>
+
+<PlotlyChart src="figures/fraction_attending_zero.json" id="fraction_attending_zero">
+This figure examines how often heads in different layers attend to the first token.
+
+The y-axis[^1] plots the fraction of tokens where the target token with the highest attention was the first token.
+</PlotlyChart>
+
+
+<PlotlyChart src="figures/attention_focus_layers.json" id="attention_focus_layers" title="Attention Concentration">
+This figure examines how concentrated the attention is on a single token.
+
+The y-axis[^1] plots the difference between the highest and second highest attention probability (attention after softmax). Since the probability across all target tokens sums to 1, a value close to 1 in this plot indicates that head was focused on single tokens rather than multiple tokens.
+</PlotlyChart>
+
+
+## What does the attention mechanism change?
+
+To study the effect that attention has on the result, I examine how the hidden state is changed by the attention block. To do this, we can compute how much the *hidden_state*[^2] is changed by each attention head.
+
+From this change to the *hidden_state*, we can compute two things:
+
+* **Update Magnitude**: The L2-norm of the *context_layer*, indicating how strongly each head is changing the *hidden_state*. We normalize this by the L2-norm of the *hidden_state* itself.
+* **Update Orientation**: The projection of the normalized *hidden_state* and normalized *context_layer*. This measures the cosine of the angle between the two.
+
+
+
+<SliderFigure
+  id="impact_magnitude"
+  title="Effect of Attention Head on Hidden State"
+  remove_title={true}
+  sliders={['layer']}
+  src="figures/impact_magnitude/impact_magnitude_0_${layer}.json"
+  layer_max={23}
+  layer_init={14}
+  xlabel="Update Magnitude"
+>
+This histogram visualizes the distribution of *update magnitude* over tokens for each head in a layer.
+</SliderFigure>
+
+
+<SliderFigure
+  id="impact_orientation"
+  title="Attention Impact Orientation"
+  remove_title={true}
+  sliders={['layer']}
+  src="figures/impact_orientation/impact_orientation_0_${layer}.json"
+  layer_max={23}
+  layer_init={14}
+  xlabel="Update Alignment"
+>
+This histogram visualizes the distribution of *update alignment* over tokens for each head in a layer. The alignment is measured as the projection of the update onto the input.
+</SliderFigure>
+
+
+<SliderFigure
+  id="impact_orientation_vs_norms"
+  title="Impact Orientation vs Impact Strength"
+  remove_title={true}
+  sliders={['layer']}
+  src="figures/impact_orientation_vs_norms/impact_orientation_vs_norms_0_${layer}.json"
+  layer_max={23}
+  layer_init={14}
+  xlabel="Update Alignment"
+  ylabel="Update Magnitude"
+>
+This plot compares the alignment of the *hidden_state* update to its magnitude. Alignments near zero indicate that the update is orthongonal to the existing *hidden_state*. Negative alginment means the update is canceling out part of the *hidden_state*.
+</SliderFigure>
+
+
+<PlotlyChart
+  src="figures/zero_token_impact_illustration/zero_token_impact_illustration_0_5.json"
+  id="zero_token_impact_illustration"
+>
+This figure plots the token index (from the start of the sequence) vs the impact on the hidden state (mixing all heads together). For layers 4 and later, when attention focuses on the first token, that head has no impact on the hidden state.
+</PlotlyChart>
+
+
+
+[^1]: The lines in <FigureRef id="fraction_attending_self" />, <FigureRef id="fraction_attending_zero" />, and <FigureRef id="attention_focus_layers" /> do not correspond directly to specific heads. Instead, they have been sorted so that the lines not cross. This creates a more interesting visualization since there is no relationship between heads in different layers. The actual head ids are available in the tooltips.
+
+[^2]: The *hidden_state* is the term I'm using for the input to each block of the model. It is essentially the embedding as it gets updated by each layer.

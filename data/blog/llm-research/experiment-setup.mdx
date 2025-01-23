@@ -1,15 +1,15 @@
 ---
 title: Experiment Setup
-date: '2024-07-10'
+date: '2025-01-20'
 draft: false
-discoverable: false
+discoverable: true
 tags: ['llm']
 summary: 'An overview of the setup I use for the research. Which model, dataset, ect...'
 ---
 
 ## Experimental Philosophy
 
-I'm interested in examining an already trained model to find structure within
+Over the past year, I've been interested in examining an already trained model to find structure within
 the model weights that will provide insights into how training or the model
 architecture could be improved. I expect that the emergent structure will be
 similar across most LLMs, so which model I evaluate is relatively unimportant at
@@ -23,18 +23,16 @@ best answered through model training, I am focusing my attention on those
 questions I can answer without the need to sweep training parameters or modify
 model architecture.
 
-## My Setup
+## Setup
 
 I run all my analysis using `streamlit` and create visualizations using
-`plotly`. I have a normal computer with an `i5-13600K` processor and a
-`GTX 1080` graphics card. I did upgrade it to `96GB` of RAM. I had installed
-`48GB` when I last upgraded the computer since I expected I would be playing
-around with some of the new ML technologies. Once I started working with LLM
-models I found that was not quite enough for what I was doing, so I added two
-more sticks.
+`plotly`. I use my personal desktop computer with an `i5-13600K` processor, a
+`GTX 1080` graphics card, and `96GB` of RAM.
 
 I run on Windows using `WSL`. I have disabled the use of swap and allowed WSL to
-use most of the system memory--I still occasionally get OOMs though.
+use most of the system memory. To avoid python memory usage growing continuously
+until it OOMs, I use `np.memmap` to materialize and load model weight matrices
+and other large pieces of data.
 
 I sometimes use `jax` to accelerate the model evaluation using the GPU. Most of
 the work doesn't require me to run the entire model, though. In those cases I
@@ -42,14 +40,9 @@ typically stick with numpy since it interacts more naturaly with `streamlit`.
 The model I'm using came as a `pytorch` model, which was also able to run on
 the GPU within `WSL`.
 
-I use `np.memmap` for the model weight matrices so that they don't grow the
-python process memory usage. Since these matrices can be quite large, this
-allows me to load them in code whenever I use them without worrying about
-loading multiple copies of the weights into memory.
+## Model
 
-## The Model
-
-I'm using the `tiiuae/falcon-rw-1b` model from Hugging Face. I tried using the
+I'm using the [`tiiuae/falcon-rw-1b`](https://huggingface.co/tiiuae/falcon-rw-1b) model from Hugging Face. I initially tried using the
 LLAMA-2 model, but at 7B parameters, I ran into memory problems. Now that I've
 worked with these models I know how I'd handle those memory problems, but since
 I'm all set up to use the `falcon-rw-1b` model I see no need to switch at this
@@ -60,13 +53,11 @@ to make some architecture decisions that make it interesting to study. Some of
 the things I like about the model are:
 
 1. At only 1B parameters, it's small enough that I can keep it in memory and
-   have memory to spare for my analysis.
-2. It produces relatively good text completions, so it probably has some of the
-   same emergent behavior of larger models.
-3. It uses `ALIBI` as the position encoding, which is much simpler than cosine
-   encoding or rotary positional encoding.
-4. It uses a GeLU activation function, which is simpler than the GLU activation
-   function used in `LLAMA-2`.
+   have memory to spare for the analysis.
+2. It produces relatively good text completions, so it should have some of the
+   same emergent properties of larger models.
+3. It uses [`ALiBi`](https://arxiv.org/abs/2108.12409) as the position encoding, which is much simpler than cosine encoding or rotary positional encoding.
+4. It uses a [GeLU activation function](https://paperswithcode.com/method/gelu), which is simpler than the [GLU activation function](https://arxiv.org/pdf/2002.05202) used in `LLAMA-2`.
 
 The model has these properties:
 
@@ -80,8 +71,9 @@ The model has these properties:
 | Activation Function |   GeLU    |
 | Positional Encoding |   ALIBI   |
 | Layer Normalization | layerNorm |
+| Tokenizer           | GPT-2 tokenizer |
 
-## A Dataset
+## Dataset
 
 For some of my examinations I want to look at the statistical properties of
 intermediates in the model. To do this I need to run many tokens through the

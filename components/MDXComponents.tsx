@@ -5,6 +5,9 @@ import Image from './Image'
 import CustomLink from './Link'
 import TableWrapper from './TableWrapper'
 import PlotlyChart from './PlotlyChart'
+import SliderFigure from "./SliderFigure"
+import {FigureRef} from "./FigureIdContext"
+
 
 export const components: MDXComponents = {
   Image,
@@ -13,4 +16,6 @@ export const components: MDXComponents = {
   pre: Pre,
   table: TableWrapper,
   PlotlyChart,
+  FigureRef,
+  SliderFigure,
 }

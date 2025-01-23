@@ -1,5 +1,5 @@
 'use client'
-import { createContext, useCallback, useRef } from 'react'
+import { createContext, useCallback, useRef, ReactNode, useContext } from 'react'
 
 export const FigureIdContext = createContext((id) => {
   return 0
@@ -23,37 +23,11 @@ export function FigureIdTracker({ children }) {
   return <FigureIdContext.Provider value={getFigureId}>{children}</FigureIdContext.Provider>
 }
 
-// export function FigureIdTracker({ children }) {
-//   const chapterRef = useRef(null)
-//   const figureTracker = useRef(1)
-
-//   const updateImageNumbers = () => {
-//     const imageTags = [...chapterRef.current.querySelectorAll('.image')]
-//     Object.values(figureTracker.current).forEach((imageData) => {
-//       const imageIndex = imageTags.indexOf(figureData.ref.current)
-//       if (imageIndex === -1) delete figureData.number
-//       else figureData.number = imageIndex + 1 // Count from 1.
-//     })
-//   }
-//   const registerFigure = useCallback(
-//     (id, ref) => {
-//       figureTracker.current[id] = { ref }
-//       updateImageNumbers()
-//     },
-//     [figureTracker]
-//   )
-//   const unregisterFigure = useCallback(
-//     (id) => {
-//       delete figureTracker.current[id]
-//       updateImageNumbers()
-//     },
-//     [figureTracker]
-//   )
-
-//   const data = {
-//     registerFigure,
-//     unregisterFigure,
-//     figureData: figureTracker.current,
-//   }
-//   return <FigureIdContext.Provider value={data}>{children}</FigureIdContext.Provider>
-// }
+export function FigureRef({id, children}: {id: string, children: ReactNode}) {
+  const getFigureId = useContext(FigureIdContext)
+  const figureId = getFigureId(id)
+  if (!children) {
+    children = `Figure ${figureId}`
+  }
+  return <a href={`#${id}`}>{children}</a>
+}

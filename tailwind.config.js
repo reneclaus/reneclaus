@@ -1,3 +1,4 @@
+import {heroui} from "@heroui/react";
 // @ts-check
 const { fontFamily } = require('tailwindcss/defaultTheme')
 const colors = require('tailwindcss/colors')
@@ -6,6 +7,7 @@ const colors = require('tailwindcss/colors')
 module.exports = {
   content: [
     './node_modules/pliny/**/*.js',
+    "./node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}",
     './app/**/*.{js,ts,jsx,tsx}',
     './pages/**/*.{js,ts,tsx}',
     './components/**/*.{js,ts,tsx}',
@@ -67,5 +69,9 @@ module.exports = {
       }),
     },
   },
-  plugins: [require('@tailwindcss/forms'), require('@tailwindcss/typography')],
+  plugins: [
+    require('@tailwindcss/forms'),
+    require('@tailwindcss/typography'),
+    heroui(),
+  ],
 }
