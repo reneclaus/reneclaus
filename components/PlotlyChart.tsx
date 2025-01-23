@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState, useContext, ReactNode } from 'react'
+import React, { useEffect, useState, useContext, ReactNode, useRef } from 'react'
 import dynamic from 'next/dynamic'
 import { FigureIdContext } from './FigureIdContext'
 import { ModeBarButtonAny } from 'plotly.js'
@@ -14,6 +14,31 @@ import {
 } from "@heroui/react";
 
 const Plot = dynamic(() => import('react-plotly.js'), { ssr: false })
+
+// This causes an update when going to print preview, which causes Plotly the
+// relayout. I don't need to actually use the result.
+const useMediaQuery = (query: string): boolean => {
+  const [matches, setMatches] = useState<boolean>(false);
+
+  useEffect(() => {
+    const media = window.matchMedia(query);
+    if (media.matches !== matches) {
+      setMatches(media.matches);
+    }
+
+    // Define the listener as a separate function to avoid recreating it on each render
+    const listener = () => setMatches(media.matches);
+
+    // Use 'change' instead of 'resize' for better performance
+    media.addEventListener("change", listener); 
+
+    // Cleanup function to remove the event listener
+    return () => media.removeEventListener("change", listener);
+
+  }, [matches, query]); // Only recreate the listener when 'matches' or 'query' changes
+
+  return matches;
+};
 
 export default function PlotlyChart({
   src,
@@ -31,6 +56,7 @@ export default function PlotlyChart({
   // }
   const [file, setFile] = useState(undefined)
   const [isFullScreen, setFullScreen] = useState(false)
+  const mediaMatches = useMediaQuery('print')
   const getFigureId = useContext(FigureIdContext)
   const figureId = getFigureId(id ? id : src)
   id = id || `figure_${figureId}`
@@ -83,13 +109,7 @@ export default function PlotlyChart({
     config={config}
     style={{ width: '100%', height: '100%' }}
   />
-  if (isFullScreen) {
-    plotFigure = <Modal size={"full"} isOpen={true} onClose={() => setFullScreen(false)} hideCloseButton={true}>
-      <ModalContent>
-      <ModalBody>{plotFigure}</ModalBody>
-      </ModalContent>
-    </Modal>
-  }
+  
   return (
     <figure id={id}>
       {plotFigure}
@@ -121,6 +141,7 @@ export function PlotlyChartNoFigure({
   // }
   const [file, setFile] = useState(undefined)
   const [isFullScreen, setFullScreen] = useState(false)
+  const mediaMatches = useMediaQuery('print')
 
   useEffect(() => {
     const abortController = new AbortController()
@@ -177,6 +198,7 @@ export function PlotlyChartNoFigure({
       config={config}
       style={{ width: '100%', height: '100%' }}
     />
+
   if (isFullScreen) {
     return (
       <Modal size={"full"} isOpen={true} onClose={() => setFullScreen(false)} hideCloseButton={true}>

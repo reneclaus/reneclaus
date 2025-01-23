@@ -29,5 +29,5 @@ export function FigureRef({id, children}: {id: string, children: ReactNode}) {
   if (!children) {
     children = `Figure ${figureId}`
   }
-  return <a href={`#${id}`}>{children}</a>
+  return <><a href={`#${id}`}>{children}</a> </>
 }

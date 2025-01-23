@@ -77,3 +77,8 @@ figure {
 figure p:last-child {
   margin-bottom: 0.5em;
 }
+@media print {
+  figure {
+    break-inside: avoid;
+  }
+}
