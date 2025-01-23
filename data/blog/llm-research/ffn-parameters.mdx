@@ -1,0 +1,63 @@
+---
+title: Feed Forward Network Parameters
+date: '2025-01-24'
+draft: true
+discoverable: true
+tags: ['llm']
+summary: "Multiple figures exploring patterns within the feed forward network weight matrices."
+---
+
+The feed forward network (FFN) has the mathematical structure: $\sigma(x M_1 + b) M_2$. Where $\sigma$ is the GELU activation function, $b$ is the bias, and $M_1$ and $M_2$ are the weight matrices, which I will call the "input" and "output" matrix.
+
+This can be thought of as similar to a database lookup, with $M_1$ and $M_2$ being the database.
+
+1. $x$ is compared to each column of $M_1$ to produce a similarity score.
+2. $\sigma$ checks that this similarity score is at least some threshold set by the bias, $b$.
+3. For each column that meets the threshold, we add the corresponding column of $M_2$ to the output. This output is scaled by how much the score exceeded the threshold.
+
+The following figures examine the properties of the $M_1$ and $M_2$ columns. This model has 8192 columns in each FFN.
+
+## M1-M2 Anti-Alignment
+
+<FigureRef id="norm_v_bias" /> explores the relationship between the $M_1$ columns, $M_2$ columns, and bias. Clear correlations can be seen in later layers.
+
+The correlation between the magnitude of the $M_1$ columns and the bias is easy to explain: if you increase the magnitude of an $M_1$ column, the exact same input *hidden_state* will pass a threshold. If the magnitudes of $M_1$ columns are not precisely controlled, then it makes sense that the bias adjust to keep the likelihood of passing the threshold similar across columns.
+
+I don't have a complete explanation of the correlation between the $M_2$ column mangitudes and bias, but I interpret the figures to suggest that the $M_2$ columns mostly have a particular magnitude, with some outliers.
+
+The most interesting figure is the alignment between the $M_1$ and $M_2$ columns. If you examine this figure at different layers, you'll observe that there are initially two clusters--one with positive alignment and one with negative alignment. For later layers these two clusters evolve into a single cluster with a sligh negative alignment.
+
+<SliderFigure
+  id="norm_v_bias"
+  title="Correlation with Bias"
+  sliders={['layer']}
+  src="figures/ffn_norm_v_bias/ffn_norm_v_bias_${layer}.json"
+  layer_max={23}
+  layer_init={10}
+>
+This figure looks for correlations between the columns of $M_1$ and $M_2$ and the bias. In the 2D histograms, outliers are highlighted to dispell the illusion that the histogram fully captures the distribution.
+
+*M1_norm* and *M2_norm* are the magnitudes of the columns of $M_1$ and $M_2$, respectively. *M1-M2 Alignment* is the cosiine similarity of each $M_1$ column with its corresponding $M_2$ column.
+</SliderFigure>
+
+
+<PlotlyChart
+  id="m1_m2_alignment_fit"
+  src="figures/ffn_m1_m2_alignment_fit.json"
+  title="Alignment Fit"
+>
+In <FigureRef id="norm_v_bias" /> there is an interesting correlation between the *M1-M2 Alignment* and the bias. This figure fits a line to the and plots the slope and average bias and alignment as a function of layer.
+</PlotlyChart>
+
+
+<SliderFigure
+  id="ffn_column_similarity"
+  title="Column Correlations"
+  sliders={['layer']}
+  src="figures/ffn_column_similarity/ffn_column_similarity_${layer}.json"
+  layer_max={23}
+  layer_init={0}
+>
+This figure shows the cosine similarity of each column with each other column of the same matrix.
+The bias in the *M1* plot indicates that there is that columns of $M_1$ tend to point, at least partially, in the same direction, while for $M_2$ the columns are relatively uncorrelated.
+</SliderFigure>

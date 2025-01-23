@@ -139,10 +139,10 @@ export function PlotlyChartNoFigure({
           data['layout']['yaxis']['title'] = xlabel
         }
         delete data['layout']['width']
-        delete data['layout']['height']
-        if ('layout' in data && 'height' in data['layout']) {
-          delete data['layout']['height']
-        }
+        // delete data['layout']['height']
+        // if ('layout' in data && 'height' in data['layout']) {
+        //   delete data['layout']['height']
+        // }
         if ('layout' in data && 'height' in data['layout']) {
           delete data['layout']['width']
         }

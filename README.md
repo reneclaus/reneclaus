@@ -1,0 +1,1 @@
+Use `yarn build` to test that the build process will work. For writing and development `yarn run` works, but it doesn't do the static building needed for github pages. For `yarn build` to work, `yarn run` can't be running.

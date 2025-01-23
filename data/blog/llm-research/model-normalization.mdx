@@ -2,9 +2,32 @@
 title: Model Normalization
 date: '2024-07-10'
 draft: true
+discoverable: false
 tags: ['llm']
 summary: 'An in-depth examination of redundant model parameters and other observations.'
 ---
+
+When studying the model parameters, I want to ensure that the parameters are independent. For example, if there were two parameters **a** and **b** that are always used together as **a + b**, then I would not get any meaningful insights looking at **a** or **b** separately since training would have optimized **a + b** and how that value is split into the **a** and **b** matrices is arbitrary.
+
+So, before starting any analysis, I went through the model and cleaned up these situations.
+
+## Layer Norm
+
+The model uses a layer normalization step on the inputs to the attention block and the feed forward block. This layer normalization step is:
+
+$$
+\bold{y} = \left(\frac{\bold{x} - mean(\bold{x})}{std(\bold{x}) + 10^{-6}} + \bold{b}\right) \bold{W}
+$$
+
+This layer normalization step is intended to keep the inputs to each layer normally distributed. It turns out, however, that the $x - mean(x)$ can be converted into a matrix multiplication,
+
+```
+x @ (np.eye(2048) - np.full((2048, 2048), 1/2048))
+```
+
+This mean-subtraction matrix, along with the layerNorm weight matrix $\bold{W}$, can be combined into the query, key, value, and first MLP matrix to reduce the number of parameters in the model. While the reduction in number of parameters is not significant, this step removes parameters that are not linearly independent.
+
+**TODO: should I put in a plot of the distribution of the normalization factors?**
 
 ## Attention QK-bias
 

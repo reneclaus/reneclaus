@@ -1,155 +1,64 @@
 ---
-title: How the Model Converges to the Final Next Token
-date: '2024-07-11'
+title: Logit Evolution - How the model decides
+date: '2025-01-23'
 draft: true
 discoverable: true
 tags: ['llm']
-summary: "I explore how the model's prediction of the next token evolves through the layers of the model. I also introduce my ossified parameter hypothesis."
+summary: "Multiple figures exploring how the model's prediction of the next token evolves through the layers of the model."
 ---
 
-## Overview
+The following figures explore how the model *decides* what the next token is. By examining how the model converges to the tokens it finally predicts, we can gain insights into how the model might be achieving that.
 
-> How does the model decide on which token to produce next?
+These figures use this arbitrary test sentence as input[^1]. The sliders under each figure allow the plots to focus on any of the individual tokens within this text.
+
+<div><span title="0" style={{"color":"rgb(31, 119, 180)"}}>Community</span><span title="1" style={{"color":"rgb(255, 127, 14)"}}> Inv</span><span title="2" style={{"color":"rgb(44, 160, 44)"}}>olve</span><span title="3" style={{"color":"rgb(214, 39, 40)"}}>ment</span><span title="4" style={{"color":"rgb(148, 103, 189)"}}>.</span><span title="5" style={{"color":"rgb(140, 86, 75)"}}> Kra</span><span title="6" style={{"color":"rgb(227, 119, 194)"}}>emer</span><span title="7" style={{"color":"rgb(127, 127, 127)"}}> Mining</span><span title="8" style={{"color":"rgb(188, 189, 34)"}}> &amp;</span><span title="9" style={{"color":"rgb(23, 190, 207)"}}> Materials</span><span title="10" style={{"color":"rgb(31, 119, 180)"}}> is</span><span title="11" style={{"color":"rgb(255, 127, 14)"}}> committed</span><span title="12" style={{"color":"rgb(44, 160, 44)"}}> to</span><span title="13" style={{"color":"rgb(214, 39, 40)"}}> being</span><span title="14" style={{"color":"rgb(148, 103, 189)"}}> a</span><span title="15" style={{"color":"rgb(140, 86, 75)"}}> strong</span><span title="16" style={{"color":"rgb(227, 119, 194)"}}> community</span><span title="17" style={{"color":"rgb(127, 127, 127)"}}> partner</span><span title="18" style={{"color":"rgb(188, 189, 34)"}}> by</span><span title="19" style={{"color":"rgb(23, 190, 207)"}}> working</span><span title="20" style={{"color":"rgb(31, 119, 180)"}}> with</span><span title="21" style={{"color":"rgb(255, 127, 14)"}}> citizens</span><span title="22" style={{"color":"rgb(44, 160, 44)"}}>,</span><span title="23" style={{"color":"rgb(214, 39, 40)"}}> businesses</span><span title="24" style={{"color":"rgb(148, 103, 189)"}}> and</span><span title="25" style={{"color":"rgb(140, 86, 75)"}}> government</span><span title="26" style={{"color":"rgb(227, 119, 194)"}}> to</span><span title="27" style={{"color":"rgb(127, 127, 127)"}}> be</span><span title="28" style={{"color":"rgb(188, 189, 34)"}}> a</span><span title="29" style={{"color":"rgb(23, 190, 207)"}}> positive</span><span title="30" style={{"color":"rgb(31, 119, 180)"}}> and</span><span title="31" style={{"color":"rgb(255, 127, 14)"}}> contributing</span><span title="32" style={{"color":"rgb(44, 160, 44)"}}> neighbor</span><span title="33" style={{"color":"rgb(214, 39, 40)"}}>..</span><span title="34" style={{"color":"rgb(148, 103, 189)"}}> Kra</span><span title="35" style={{"color":"rgb(140, 86, 75)"}}>emer</span><span title="36" style={{"color":"rgb(227, 119, 194)"}}> believes</span><span title="37" style={{"color":"rgb(127, 127, 127)"}}> in</span><span title="38" style={{"color":"rgb(188, 189, 34)"}}> being</span><span title="39" style={{"color":"rgb(23, 190, 207)"}}> involved</span><span title="40" style={{"color":"rgb(31, 119, 180)"}}> in</span><span title="41" style={{"color":"rgb(255, 127, 14)"}}> enhancing</span><span title="42" style={{"color":"rgb(44, 160, 44)"}}> and</span><span title="43" style={{"color":"rgb(214, 39, 40)"}}> supporting</span><span title="44" style={{"color":"rgb(148, 103, 189)"}}> the</span><span title="45" style={{"color":"rgb(140, 86, 75)"}}> communities</span><span title="46" style={{"color":"rgb(227, 119, 194)"}}> where</span><span title="47" style={{"color":"rgb(127, 127, 127)"}}> employees</span><span title="48" style={{"color":"rgb(188, 189, 34)"}}> work</span><span title="49" style={{"color":"rgb(23, 190, 207)"}}> and</span><span title="50" style={{"color":"rgb(31, 119, 180)"}}> live</span><span title="51" style={{"color":"rgb(255, 127, 14)"}}>.</span><span title="52" style={{"color":"rgb(44, 160, 44)"}}> Each</span><span title="53" style={{"color":"rgb(214, 39, 40)"}}> year</span><span title="54" style={{"color":"rgb(148, 103, 189)"}}>,</span><span title="55" style={{"color":"rgb(140, 86, 75)"}}> Kra</span><span title="56" style={{"color":"rgb(227, 119, 194)"}}>emer</span><span title="57" style={{"color":"rgb(127, 127, 127)"}}> contributes</span><span title="58" style={{"color":"rgb(188, 189, 34)"}}> financially</span><span title="59" style={{"color":"rgb(23, 190, 207)"}}> to</span><span title="60" style={{"color":"rgb(31, 119, 180)"}}> non</span><span title="61" style={{"color":"rgb(255, 127, 14)"}}>-</span><span title="62" style={{"color":"rgb(44, 160, 44)"}}>profit</span><span title="63" style={{"color":"rgb(214, 39, 40)"}}> organizations</span><span title="64" style={{"color":"rgb(148, 103, 189)"}}> and</span><span title="65" style={{"color":"rgb(140, 86, 75)"}}> offers</span><span title="66" style={{"color":"rgb(227, 119, 194)"}}> in</span><span title="67" style={{"color":"rgb(127, 127, 127)"}}>-</span><span title="68" style={{"color":"rgb(188, 189, 34)"}}>kind</span><span title="69" style={{"color":"rgb(23, 190, 207)"}}> support</span><span title="70" style={{"color":"rgb(31, 119, 180)"}}> (</span><span title="71" style={{"color":"rgb(255, 127, 14)"}}>don</span><span title="72" style={{"color":"rgb(44, 160, 44)"}}>ated</span><span title="73" style={{"color":"rgb(214, 39, 40)"}}> project</span><span title="74" style={{"color":"rgb(148, 103, 189)"}}> management</span><span title="75" style={{"color":"rgb(140, 86, 75)"}}> services</span><span title="76" style={{"color":"rgb(227, 119, 194)"}}>,</span><span title="77" style={{"color":"rgb(127, 127, 127)"}}> labor</span><span title="78" style={{"color":"rgb(188, 189, 34)"}}> and</span><span title="79" style={{"color":"rgb(23, 190, 207)"}}> materials</span><span title="80" style={{"color":"rgb(31, 119, 180)"}}>,</span><span title="81" style={{"color":"rgb(255, 127, 14)"}}> either</span><span title="82" style={{"color":"rgb(44, 160, 44)"}}> at</span><span title="83" style={{"color":"rgb(214, 39, 40)"}}> cost</span><span title="84" style={{"color":"rgb(148, 103, 189)"}}> or</span><span title="85" style={{"color":"rgb(140, 86, 75)"}}> at</span><span title="86" style={{"color":"rgb(227, 119, 194)"}}> no</span><span title="87" style={{"color":"rgb(127, 127, 127)"}}> charge</span><span title="88" style={{"color":"rgb(188, 189, 34)"}}>)</span><span title="89" style={{"color":"rgb(23, 190, 207)"}}> for</span><span title="90" style={{"color":"rgb(31, 119, 180)"}}> community</span><span title="91" style={{"color":"rgb(255, 127, 14)"}}> projects</span><span title="92" style={{"color":"rgb(44, 160, 44)"}}>..</span><span title="93" style={{"color":"rgb(214, 39, 40);"}}> Kra</span><span title="94" style={{"color":"rgb(148, 103, 189)"}}>emer</span><span title="95" style={{"color":"rgb(140, 86, 75)"}}> pro</span><span title="96" style={{"color":"rgb(227, 119, 194)"}}>actively</span><span title="97" style={{"color":"rgb(127, 127, 127)"}}> seeks</span><span title="98" style={{"color":"rgb(188, 189, 34)"}}> ways</span><span title="99" style={{"color":"rgb(23, 190, 207)"}}> to</span><span title="100" style={{"color":"rgb(31, 119, 180)"}}> strengthen</span><span title="101" style={{"color":"rgb(255, 127, 14)"}}> relationships</span><span title="102" style={{"color":"rgb(44, 160, 44)"}}> with</span><span title="103" style={{"color":"rgb(214, 39, 40)"}}> the</span><span title="104" style={{"color":"rgb(148, 103, 189)"}}> community</span><span title="105" style={{"color":"rgb(140, 86, 75)"}}> and</span><span title="106" style={{"color":"rgb(227, 119, 194)"}}> is</span><span title="107" style={{"color":"rgb(127, 127, 127)"}}> proud</span><span title="108" style={{"color":"rgb(188, 189, 34)"}}> to</span><span title="109" style={{"color":"rgb(23, 190, 207)"}}> stand</span><span title="110" style={{"color":"rgb(31, 119, 180)"}}> behind</span><span title="111" style={{"color":"rgb(255, 127, 14)"}}> the</span><span title="112" style={{"color":"rgb(44, 160, 44)"}}> following</span><span title="113" style={{"color":"rgb(214, 39, 40)"}}> charities</span><span title="114" style={{"color":"rgb(148, 103, 189)"}}> and</span><span title="115" style={{"color":"rgb(140, 86, 75)"}}> organizations</span><span title="116" style={{"color":"rgb(227, 119, 194)"}}> through</span><span title="117" style={{"color":"rgb(127, 127, 127)"}}> product</span><span title="118" style={{"color":"rgb(188, 189, 34)"}}> and</span><span title="119" style={{"color":"rgb(23, 190, 207)"}}> financial</span><span title="120" style={{"color":"rgb(31, 119, 180)"}}> donations</span><span title="121" style={{"color":"rgb(255, 127, 14)"}}>:</span><span title="122" style={{"color":"rgb(44, 160, 44)"}}> Burns</span><span title="123" style={{"color":"rgb(214, 39, 40)"}}>ville</span><span title="124" style={{"color":"rgb(148, 103, 189)"}}> Chamber</span><span title="125" style={{"color":"rgb(140, 86, 75)"}}> of</span><span title="126" style={{"color":"rgb(227, 119, 194)"}}> Commerce</span><span title="127" style={{"color":"rgb(127, 127, 127)"}}>,</span><span title="128" style={{"color":"rgb(188, 189, 34)"}}> Burns</span><span title="129" style={{"color":"rgb(23, 190, 207)"}}>ville</span><span title="130" style={{"color":"rgb(31, 119, 180)"}}> Fire</span><span title="131" style={{"color":"rgb(255, 127, 14)"}}> M</span><span title="132" style={{"color":"rgb(44, 160, 44)"}}>uster</span><span title="133" style={{"color":"rgb(214, 39, 40)"}}>,</span><span title="134" style={{"color":"rgb(148, 103, 189)"}}> City</span><span title="135" style={{"color":"rgb(140, 86, 75)"}}> of</span><span title="136" style={{"color":"rgb(227, 119, 194)"}}> Burns</span><span title="137" style={{"color":"rgb(127, 127, 127)"}}>ville</span><span title="138" style={{"color":"rgb(188, 189, 34)"}}>,</span><span title="139" style={{"color":"rgb(23, 190, 207)"}}> Water</span><span title="140" style={{"color":"rgb(31, 119, 180)"}}> Treatment</span><span title="141" style={{"color":"rgb(255, 127, 14)"}}> Plant</span><span title="142" style={{"color":"rgb(44, 160, 44)"}}>,</span><span title="143" style={{"color":"rgb(214, 39, 40)"}}> Minnesota</span><span title="144" style={{"color":"rgb(148, 103, 189)"}}> State</span><span title="145" style={{"color":"rgb(140, 86, 75)"}}> Patrol</span><span title="146" style={{"color":"rgb(227, 119, 194)"}}> Tro</span><span title="147" style={{"color":"rgb(127, 127, 127)"}}>opers</span><span title="148" style={{"color":"rgb(188, 189, 34)"}}> Association</span><span title="149" style={{"color":"rgb(23, 190, 207)"}}>,</span><span title="150" style={{"color":"rgb(31, 119, 180)"}}> Minnesota</span><span title="151" style={{"color":"rgb(255, 127, 14)"}}> Chamber</span><span title="152" style={{"color":"rgb(44, 160, 44)"}}> of</span><span title="153" style={{"color":"rgb(214, 39, 40)"}}> Commerce</span><span title="154" style={{"color":"rgb(148, 103, 189)"}}>,</span><span title="155" style={{"color":"rgb(140, 86, 75)"}}> Burns</span><span title="156" style={{"color":"rgb(227, 119, 194)"}}>ville</span><span title="157" style={{"color":"rgb(127, 127, 127)"}}> Robotics</span><span title="158" style={{"color":"rgb(188, 189, 34)"}}>,</span><span title="159" style={{"color":"rgb(23, 190, 207)"}}> W</span><span title="160" style={{"color":"rgb(31, 119, 180)"}}>ounded</span><span title="161" style={{"color":"rgb(255, 127, 14)"}}> Warrior</span><span title="162" style={{"color":"rgb(44, 160, 44)"}}> Project</span><span title="163" style={{"color":"rgb(214, 39, 40)"}}>,</span><span title="164" style={{"color":"rgb(148, 103, 189)"}}> Burns</span><span title="165" style={{"color":"rgb(140, 86, 75)"}}>ville</span><span title="166" style={{"color":"rgb(227, 119, 194)"}}> Community</span><span title="167" style={{"color":"rgb(127, 127, 127)"}}> Foundation</span><span title="168" style={{"color":"rgb(188, 189, 34)"}}>-</span><span title="169" style={{"color":"rgb(23, 190, 207)"}}>Police</span><span title="170" style={{"color":"rgb(31, 119, 180)"}}> Donation</span><span title="171" style={{"color":"rgb(255, 127, 14)"}}>,</span><span title="172" style={{"color":"rgb(44, 160, 44)"}}> Boy</span><span title="173" style={{"color":"rgb(214, 39, 40)"}}> Scouts</span><span title="174" style={{"color":"rgb(148, 103, 189)"}}> of</span><span title="175" style={{"color":"rgb(140, 86, 75)"}}> America</span><span title="176" style={{"color":"rgb(227, 119, 194)"}}>,</span><span title="177" style={{"color":"rgb(127, 127, 127)"}}> and</span><span title="178" style={{"color":"rgb(188, 189, 34)"}}> Wings</span><span title="179" style={{"color":"rgb(23, 190, 207)"}}> of</span><span title="180" style={{"color":"rgb(31, 119, 180)"}}> The</span><span title="181" style={{"color":"rgb(255, 127, 14)"}}> North</span><span title="182" style={{"color":"rgb(44, 160, 44)"}}>.</span></div>
+
+<FigureRef id="logit_evolution" /> studies which layers and blocks affect the next token prediction. It focuses on the tokens the model assigns the highest score and examines how that score changes with each attention and feed forward block. This intermediate score is calculated by skipping subsequent attention and feed forward blocks and projecting the intermediate *hidden_state* directly against the final weight matrix.
+
+<SliderFigure
+  id="logit_evolution"
+  title="Logit Evolution"
+  sliders={['token']}
+  src="figures/logit_evolution_3/logit_evolution_3_${token}.json"
+  token_max={181}
+  token_init={93}
 >
-> Does it make an initial guess and then refine it in each layer?
+Each curve plots how the score of a possible next token prediction changes through stages of the model. A point midway along a curve is the score the model would assign to that token if we stopped computing the model at that particular layer or block. These 10 tokens are those that the complete model gives the highest score.
+
+Light segments correspond to the effect of the attention block, while the dark segments are the effect of the feed forward network.
+</SliderFigure>
+
+The score examined in <FigureRef id="logit_evolution" /> can be a bit difficult to understand since it only matters compared to all the other tokens--if the score goes up, but all other tokens' scores also went up, then the model is not actually increasing its estimate of the likelihood of that token. <FigureRef id="rank_ordering_evolution" /> and <FigureRef id="histogram_of_logits" /> address this by examining the how the *rank* of that token compared to all other tokens changes. <FigureRef id="rank_ordering_evolution" /> focuses on how that rank changes through the stages of the model--providing insights about when the model *decides* and which parts of the model have the biggest contribution. <FigureRef id="histogram_of_logits" /> shows how the score compares to tokens the model considers less likely, providing insights on how different these top tokens are from less likely predictions.
+
+<SliderFigure
+  id="rank_ordering_evolution"
+  title="Rank Ordering Evolution"
+  sliders={['token']}
+  src="figures/rank_ordering_evolution_3/rank_ordering_evolution_3_${token}.json"
+  token_max={181}
+  token_init={93}
 >
-> Does it "think" for most of the layers and then select the token at the end?
+This figure visualizes at what point in the model it *decides* what the correct next token is. The rank of a token compared to all possible tokens is plotted along the y-axis, while progress through the model is along the x-axis. A large rank indicates that there are many tokens that the model considers more likely.
 
-To investigate these questions we can take advantage of the fact that the model
-architecture _updates_ its internal state, the embedding vector, for each layer
-before converting the embedding vector into a next-token prediction.
+The x-axis corresponds to the layer and light segments highlight the effect of the attention block, while the dark segments indicate the effect of the feed forward network.
+</SliderFigure>
 
-An overview of the operation of the LLM is:
 
-1. The token is converted to a 2048 dimensional embedding vector using a lookup table.
-2. For each of the 24 layers:
-   1. The attention block modifies the embedding vector.
-   2. The feed forward network block modifies the embedding vector.
-3. The embedding vector is projected against a vector for each possible output
-   token to produce a next-token prediction score.
-4. For each possible output token, a corresponding bias is added to the score.
-5. A softmax converts from the score to a probability between 0 and 1.
+<FigureRef id="histogram_of_logits" /> shows how the top next token predictions fit into the distribution of all possible next tokens. Moving the top slider selects different stages of the model, visualizing how the eventual predictions separate from all the other possible next tokens.
 
-At any point in step (2), while executing the model, we can jump to steps (3)
-and (4) to get a next-token prediction score for each output token. By looking
-at how the score changes as we move through the layers, we can see at what point
-the model "realizes" what the output token should be.
+It is also interesting to note that, while the mean and standard deviation are normalized, the overall shape of the distribution in <FigureRef id="histogram_of_logits" /> stays relatively similar across stages of the model.
 
-See [Logit Evolution Plots](/blog/figure-explanations/logit-evolution) for
-details on how to interpret the plots in this post.
+<SliderFigure
+  id="histogram_of_logits"
+  title="Histogram of Logits"
+  sliders={['token']}
+  src="figures/histogram_of_logits_3/histogram_of_logits_3_${token}.json"
+  token_max={181}
+  token_init={93}
+>
+This figure shows the distribution of logits across all the possible output tokens. The output tokens shown in <FigureRef id="logit_evolution" /> and <FigureRef id="rank_ordering_evolution" /> are shown in a lighter color to show where they are in the distribution. The distribution has been normalized to have the same meand and standard deviation across all layers (the top slider).
 
-## Multi-Token Word
+Hovering over each bin shows a few sample tokens from that bin.
+</SliderFigure>
 
-> Does the model behave differently when necessary information is available in
-> the context compared to when it needs to make a best guess based on its
-> training distribution?
-
-This test sentence contains repeated references to a name, "Kraemer," that
-consists of two tokens " Kra" and "emer". We can compare how the model completes
-the name the first time it sees it vs later times. We expect that the first time
-it must rely on the probability that it learned during training. The second time
-it can look back at the previous instance.
-
-> Community Involvement. <u><b>Kra</b></u>emer Mining & Materials is committed
-> to being a strong community partner by working with citizens, businesses and
-> government to be a positive and contributing neighbor.. <u><b>Kra</b></u>emer
-> believes ...
-
-<PlotlyChart src="figures/logit_evolution_3_5.json" id="fig_3_4"></PlotlyChart>
-
-The first time the name appears, the model completes it as "Kraus", through
-"Kraemer" is its third highest option, suggesting that it saw the name during
-training.
-
-<PlotlyChart src="figures/logit_evolution_3_34.json" />
-
-The second time it sees the name, it gets the correct answer ("emer" is the
-leftmost token). We also notice that the attention blocks (light blue segments)
-tend to be positively contributing to the score, whereas for other tokens and
-the previous figure that is not the case. The attention block is the part of the
-model that looks at words earlier in the text, so this suggests that at least
-sometimes the attention block is directly affecting the prediction score (rather
-than doing it indirectly).
-
-## Common Next Token
-
-You might have noticed that in the previous figure the line for the period (.)
-token is very different from the others. It starts with a very high score that
-dramatically drops.
-
-Studying more cases, I have observed that this is a common occurence--there are
-certain tokens that always start with a high score that then drops dramatically.
-If we look at the top 10 tokens before layer 0 we find "**TODO: get list of top
-10 tokens**". My interpretation is that these are tokens that are very common in
-general text, so they start with a high probability before any information about
-the rest of the text can be incorporated.
-
-For this example we want to see what the model will do when the correct next
-token is one of these common tokens. We select the token "citizens" in the text
-above because the expected next token is a comma (,).
-
-> Community Involvement. Kraemer Mining & Materials is committed to being a strong
-> community partner by working with <u>citizens</u>, ...
-
-<PlotlyChart src="figures/logit_evolution_3_21.json" />
-<PlotlyChart src="figures/rank_ordering_evolution_3_21.json" />
-
-First, it's always amazing to see that the model predicts the next token
-correctly. Most of the top-10 tokens are among the 100 most likely tokens at
-layer 0 and behave similarly. Some of the tokens ("groups", "throughout", "who")
-are not common and behave differently.
-
-Examining the line corresponding to the comma (,) prediction, we observe that
-the score drops in early layers (like before) but then rises again. This
-suggests that the first half of the layers may be compensating for the high
-initial score of the token and the second half of the layers are responsible for
-using the context to inteligently select the next token. This suggests that
-perhaps the presence of the "." in the top-10 of the previous example was
-actually a failure case where the model wasn't able to sufficiently drop the
-score of this common token before the final layer.
-
-## Ossified Parameter Hypothesis
-
-I suspect that early in training the model learned a mapping from the
-`word embedding matrix` to the `final weight matrix`[^2] that captures the
-statistical likelyhood of each token following any other token. As training
-proceeded, corrections to this prediction evolved.
-
-Maybe a correction that incorporates the previous two tokens evolved. This would
-likely have appeared in all the layers simultaneously since none of the layers
-were trained yet. Once this correction exists, a second correction could have
-appeared that uses the results of the first correction. This could only appear
-in layers 1 to 24 since at least the first layer is needed to provide the first
-correction.
-
-If we imagine this process continuing we see that later layers would naturally
-build on the outputs of earlier layers. As more complex and specific corrections
-appear, it becomes difficult to change the outputs those corrections depend on.
-The weights of early layers become ossified[^1] and resistant to change--or at least
-the behaviors or properties used by later layers ossify.
-
-Essentially, much of the behavior of early layers is reflective of the model
-behavior early in training, while later layers may have changed dramatically
-during training. Another way to put this is that groking can't change the
-weights of early layers in the model.
-
-Under this hypothesis, the high initial next-token prediction score for common
-tokens observed in the plots above is because the `word embedding matrix` and
-`final weight matrix`, which define that initial score, were the earliest
-weights to evolve and have ossified. This would also specifically
-affect the most common tokens since the prediction behavior for those would have
-evolved before less common tokens.
-
-[^1]:
-    I'm naming this "parameter ossification" to invoke the idea that the
-    parameters stop developing and to lightly evoke the concept of fossilization to
-    suggest that ossified parameters reflect the model behavior from early in
-    training.
-
-[^2]:
-    The `word embedding matrix` consists of the embeddings of each token. When
-    initially converting an input token into an embedding vector it is performed
-    using a lookup into this matrix. The `final weight matrix` is a matrix
-    consisting of a vector for each output token. The prediction score for each
-    token depends on the dot-product of the final embedding vector with each of
-    these vectors.
+[^1]: See [Experiment Setup - Dataset](experiment-setup#dataset) for information about where this sentence came from.
