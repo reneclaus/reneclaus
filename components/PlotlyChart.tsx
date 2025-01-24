@@ -110,18 +110,28 @@ export default function PlotlyChart({
     style={{ width: '100%', height: '100%' }}
   />
   
-  return (
-    <figure id={id}>
-      {plotFigure}
-      <figcaption>
-        <h4>
-          <a href={`#${id}`}>Figure {figureId}:</a>{' '}
-          <span className="font-normal">{title != null ? title : file['title']}</span>
-        </h4>
-        {children}
-      </figcaption>
-    </figure>
-  )
+  if (isFullScreen) {
+    return (
+      <Modal size={"full"} isOpen={true} onClose={() => setFullScreen(false)} hideCloseButton={true}>
+        <ModalContent>
+        <ModalBody>{plotFigure}</ModalBody>
+        </ModalContent>
+      </Modal>
+    )
+  } else {
+    return (
+      <figure id={id}>
+        {plotFigure}
+        <figcaption>
+          <h4>
+            <a href={`#${id}`}>Figure {figureId}:</a>{' '}
+            <span className="font-normal">{title != null ? title : file['title']}</span>
+          </h4>
+          {children}
+        </figcaption>
+      </figure>
+    )
+  }
 }
 
 
